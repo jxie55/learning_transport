@@ -1,0 +1,220 @@
+GAMS 25.1.2  r67455 Released Aug  1, 2018 WEX-WEI x86 64bit/MS Windows - 09/02/18 13:25:37 Page 1
+Shortest Path Problem
+C o m p i l a t i o n
+
+
+   2  *LIMROW = 0, LIMCOL = 0
+   3  *OPTIONS  ITERLIM=100000, RESLIM = 1000000, SYSOUT = OFF, SOLPRINT = OFF, lp = COINGLPK, mip = COINGLPK, OPTCR= 0.1;
+   4   
+   5  set i nodes /1*4/;
+   6  alias (i, j);
+   7   
+   8  parameter w(i,j) link travel time /
+   9  1. 2   1
+  10  1. 3   1
+  11  2. 4   1
+  12  3. 4   1
+  13  3. 2   1
+  14  /;
+  15   
+  16  parameter origin(i);
+  17  origin('1') = 1;
+  18   
+  19  parameter destination(i);
+  20  destination('4') = 1;
+  21   
+  22  parameter intermediate_node(i);
+  23  intermediate_node(i) = (1- origin(i))*(1- destination(i));
+  24   
+  25  variable z;
+  26  positive variables
+  27  x(i,j)  selection of flow between i and j;
+  28   
+  29  equations
+  30  so_obj                              define objective function
+  31  flow_on_node_origin
+  32  flow_on_node_intermediate(i)
+  33  flow_on_node_destination
+  34  ;
+  35   
+  36  so_obj.. z =e= sum((i,j)$(w(i,j)),w(i,j)*x(i,j));
+  37  flow_on_node_origin.. sum(j$(w('1',j)), x('1',j)) =e= 1;
+  38  flow_on_node_intermediate(i)$(intermediate_node(i)=1).. sum(j$(w(i,j)), x(i,j))-sum(j$(w(j,i)), x(j,i))=e= 0;
+  39  flow_on_node_destination..  sum(j$(w(j,'4')), x(j,'4'))=e= 1;
+  40   
+  41  Model shortest_path_problem /all/ ;
+  42   
+  43  solve shortest_path_problem using LP minimizing z;
+  44   
+  45  display x.l;
+  46  display z.l;
+
+
+COMPILATION TIME     =        0.000 SECONDS      3 MB  25.1.2 r67455 WEX-WEI
+GAMS 25.1.2  r67455 Released Aug  1, 2018 WEX-WEI x86 64bit/MS Windows - 09/02/18 13:25:37 Page 2
+Shortest Path Problem
+Equation Listing    SOLVE shortest_path_problem Using LP From line 43
+
+
+---- so_obj  =E=  define objective function
+
+so_obj..  z - x(1,2) - x(1,3) - x(2,4) - x(3,2) - x(3,4) =E= 0 ; (LHS = 0)
+     
+
+---- flow_on_node_origin  =E=  
+
+flow_on_node_origin..  x(1,2) + x(1,3) =E= 1 ; (LHS = 0, INFES = 1 ****)
+     
+
+---- flow_on_node_intermediate  =E=  
+
+flow_on_node_intermediate(2)..  - x(1,2) + x(2,4) - x(3,2) =E= 0 ; (LHS = 0)
+     
+flow_on_node_intermediate(3)..  - x(1,3) + x(3,2) + x(3,4) =E= 0 ; (LHS = 0)
+     
+
+---- flow_on_node_destination  =E=  
+
+flow_on_node_destination..  x(2,4) + x(3,4) =E= 1 ; (LHS = 0, INFES = 1 ****)
+     
+GAMS 25.1.2  r67455 Released Aug  1, 2018 WEX-WEI x86 64bit/MS Windows - 09/02/18 13:25:37 Page 3
+Shortest Path Problem
+Column Listing      SOLVE shortest_path_problem Using LP From line 43
+
+
+---- z  
+
+z
+                (.LO, .L, .UP, .M = -INF, 0, +INF, 0)
+        1       so_obj
+
+
+---- x  selection of flow between i and j
+
+x(1,2)
+                (.LO, .L, .UP, .M = 0, 0, +INF, 0)
+       -1       so_obj
+        1       flow_on_node_origin
+       -1       flow_on_node_intermediate(2)
+
+x(1,3)
+                (.LO, .L, .UP, .M = 0, 0, +INF, 0)
+       -1       so_obj
+        1       flow_on_node_origin
+       -1       flow_on_node_intermediate(3)
+
+x(2,4)
+                (.LO, .L, .UP, .M = 0, 0, +INF, 0)
+       -1       so_obj
+        1       flow_on_node_intermediate(2)
+        1       flow_on_node_destination
+
+REMAINING 2 ENTRIES SKIPPED
+GAMS 25.1.2  r67455 Released Aug  1, 2018 WEX-WEI x86 64bit/MS Windows - 09/02/18 13:25:37 Page 4
+Shortest Path Problem
+Model Statistics    SOLVE shortest_path_problem Using LP From line 43
+
+
+MODEL STATISTICS
+
+BLOCKS OF EQUATIONS           4     SINGLE EQUATIONS            5
+BLOCKS OF VARIABLES           2     SINGLE VARIABLES            6
+NON ZERO ELEMENTS            16
+
+
+GENERATION TIME      =        0.015 SECONDS      4 MB  25.1.2 r67455 WEX-WEI
+
+
+EXECUTION TIME       =        0.015 SECONDS      4 MB  25.1.2 r67455 WEX-WEI
+GAMS 25.1.2  r67455 Released Aug  1, 2018 WEX-WEI x86 64bit/MS Windows - 09/02/18 13:25:37 Page 5
+Shortest Path Problem
+Solution Report     SOLVE shortest_path_problem Using LP From line 43
+
+
+               S O L V E      S U M M A R Y
+
+     MODEL   shortest_path_problem   OBJECTIVE  z
+     TYPE    LP                      DIRECTION  MINIMIZE
+     SOLVER  CPLEX                   FROM LINE  43
+
+**** SOLVER STATUS     1 Normal Completion         
+**** MODEL STATUS      1 Optimal                   
+**** OBJECTIVE VALUE                2.0000
+
+ RESOURCE USAGE, LIMIT          0.000      1000.000
+ ITERATION COUNT, LIMIT         0    2000000000
+
+IBM ILOG CPLEX   25.1.2 r67455 Released Aug  1, 2018 WEI x86 64bit/MS Windows 
+Cplex 12.8.0.0
+
+Space for names approximately 0.00 Mb
+Use option 'names no' to turn use of names off
+LP status(1): optimal
+Cplex Time: 0.00sec (det. 0.01 ticks)
+Optimal solution found.
+Objective :           2.000000
+
+
+                           LOWER          LEVEL          UPPER         MARGINAL
+
+---- EQU so_obj              .              .              .             1.0000      
+---- EQU flow_on_n~         1.0000         1.0000         1.0000         1.0000      
+
+  so_obj  define objective function
+
+---- EQU flow_on_node_intermediate  
+
+         LOWER          LEVEL          UPPER         MARGINAL
+
+2          .              .              .             EPS         
+3          .              .              .              .          
+
+                           LOWER          LEVEL          UPPER         MARGINAL
+
+---- EQU flow_on_n~         1.0000         1.0000         1.0000         1.0000      
+
+                           LOWER          LEVEL          UPPER         MARGINAL
+
+---- VAR z                 -INF            2.0000        +INF             .          
+
+---- VAR x  selection of flow between i and j
+
+           LOWER          LEVEL          UPPER         MARGINAL
+
+1.2          .             1.0000        +INF             .          
+1.3          .              .            +INF             .          
+2.4          .             1.0000        +INF             .          
+3.2          .              .            +INF            1.0000      
+3.4          .              .            +INF            EPS         
+
+
+**** REPORT SUMMARY :        0     NONOPT
+                             0 INFEASIBLE
+                             0  UNBOUNDED
+GAMS 25.1.2  r67455 Released Aug  1, 2018 WEX-WEI x86 64bit/MS Windows - 09/02/18 13:25:37 Page 6
+Shortest Path Problem
+E x e c u t i o n
+
+
+----     45 VARIABLE x.L  selection of flow between i and j
+
+            2           4
+
+1       1.000
+2                   1.000
+
+
+----     46 VARIABLE z.L                   =        2.000  
+
+
+EXECUTION TIME       =        0.000 SECONDS      3 MB  25.1.2 r67455 WEX-WEI
+
+
+USER: GAMS Development Corporation, USA              G871201/0000CA-ANY
+      Free Demo, +1 202-342-0180, support@gams.com, www.gams.com DC0000
+
+
+**** FILE SUMMARY
+
+Input      C:\Users\XZZZZZZZZ\Documents\gamsdir\projdir\short_path.gms
+Output     C:\Users\XZZZZZZZZ\Documents\gamsdir\projdir\short_path.lst
